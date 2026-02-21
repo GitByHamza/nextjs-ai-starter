@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 SaaS Boilerplate
 
-## Getting Started
+The ultimate Next.js 15 starter kit for founders who want to build and ship fast. Focus on your unique product, not the infrastructure.
 
-First, run the development server:
+![Hero Image](public/og-image.png)
 
+## ✨ Features
+
+- **Framework**: Next.js 15 (App Router, Server Actions)
+- **Styling**: Tailwind CSS v4 + Shadcn UI
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth (Email + OAuth like Google)
+- **Payments**: Lemon Squeezy (Subscriptions + Webhooks handling)
+- **AI Integration**: Vercel AI SDK + Google Gemini / OpenAI Support
+- **Theming**: Premium "Tokyo Night" Dark Mode Support
+- **Components**: Pre-built Landing Page, Dashboard, Pricing, Legal pages.
+
+---
+
+## 🛠️ Quick Setup
+
+### 1. Clone & Install
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <your-repo-url> my-saas
+cd my-saas
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment Variables
+Copy the example environment file:
+```bash
+cp .env.local.example .env.local
+```
+Fill in the values in your `.env.local` based on the steps below.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Supabase Setup (Database & Auth)
+1. Create a project at [Supabase](https://supabase.com/).
+2. Get your **Project URL** and **Anon Key** (Settings -> API). Add to `.env.local`.
+3. Get the **Service Role Key** (Keep this secure!). Add to `.env.local`.
+4. Go to **SQL Editor** in Supabase and run the provided schemas (if any) or enable the provided integrations.
+5. Create a `profiles` table to store user metadata (Credits, Stripe/Lemon Squeezy Customer ID).
+*(See detailed Supabase setup guide in the documentation folder)*
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Lemon Squeezy Setup (Payments)
+1. Create a store at [Lemon Squeezy](https://www.lemonsqueezy.com/).
+2. Create a Product and a Variant (e.g., "Pro Subscription"). Grab the **Variant ID**.
+3. Go to **Settings -> API** and generate an API key. Add to `.env.local`.
+4. Set up Webhooks pointing to `https://yourdomain.com/api/webhooks/lemon-squeezy`.
+*(Note: For local development, use a tool like Ngrok to test webhooks).*
 
-## Learn More
+### 5. AI Integration Setup
+1. Get an API key from [Google AI Studio](https://aistudio.google.com/) for Gemini.
+2. Add `GOOGLE_GENERATIVE_AI_API_KEY` to `.env.local`.
+3. *(Alternative)* If using OpenAI, provide `OPENAI_API_KEY`.
 
-To learn more about Next.js, take a look at the following resources:
+### 6. Run the App
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📜 License
 
-## Deploy on Vercel
+This is a commercial boilerplate.
+- **You CAN**: Use this code to build unlimited SaaS products for yourself or clients and make money from those apps.
+- **You CANNOT**: Resell, redistribute, or openly share the raw source code or claim it as your own boilerplate product.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built by [Your Name/Company].

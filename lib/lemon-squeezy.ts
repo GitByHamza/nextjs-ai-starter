@@ -1,0 +1,14 @@
+import { lemonSqueezySetup } from "@lemonsqueezy/lemonsqueezy.js";
+
+export function configureLemonSqueezy() {
+    const apiKey = process.env.LEMON_SQUEEZY_API_KEY;
+
+    if (!apiKey) {
+        throw new Error("LEMON_SQUEEZY_API_KEY is not defined");
+    }
+
+    lemonSqueezySetup({
+        apiKey,
+        onError: (error) => console.error("Lemon Squeezy Error:", error),
+    });
+}
