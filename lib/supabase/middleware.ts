@@ -6,10 +6,25 @@ export async function updateSession(request: NextRequest) {
         request,
     })
 
+    // 1. Check if Setup Data is missing
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    // If we're already on the setup page, bypass redirects
+    if (request.nextUrl.pathname.startsWith('/setup')) {
+        return supabaseResponse
+    }
+
+    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('your-project-url')) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/setup'
+        return NextResponse.redirect(url)
+    }
+
     // Create client
     const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        supabaseUrl,
+        supabaseAnonKey,
         {
             cookies: {
                 getAll() {
