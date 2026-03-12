@@ -45,14 +45,14 @@ export function OverviewChart() {
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground)/0.2)" />
                         <XAxis
                             dataKey="name"
-                            stroke="#ffffff"
+                            stroke="hsl(var(--muted-foreground))"
                             fontSize={12}
                             tickLine={false}
                             axisLine={false}
                             dy={10}
                         />
                         <YAxis
-                            stroke="#ffffff"
+                            stroke="hsl(var(--muted-foreground))"
                             fontSize={12}
                             tickLine={false}
                             axisLine={false}

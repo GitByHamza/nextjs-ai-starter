@@ -29,10 +29,36 @@ export async function POST(request: Request) {
 
         // 2. Handle specific events
         if (eventName === "order_created" || eventName === "subscription_created") {
-            // Upgrade the user to Pro
+            const variantId = data.data.attributes.variant_id.toString();
+            const subscriptionId = data.data.attributes.subscription_id?.toString() || data.data.id.toString();
+            
+            let planType = 'free';
+            let credits = 10;
+            
+            // Determine plan based on variant ID
+            if (
+                variantId === process.env.LEMON_SQUEEZY_VARIANT_PRO_MONTHLY ||
+                variantId === process.env.LEMON_SQUEEZY_VARIANT_PRO_YEARLY
+            ) {
+                planType = 'pro';
+                credits = 100;
+            } else if (
+                variantId === process.env.LEMON_SQUEEZY_VARIANT_ENTERPRISE_MONTHLY ||
+                variantId === process.env.LEMON_SQUEEZY_VARIANT_ENTERPRISE_YEARLY
+            ) {
+                planType = 'enterprise';
+                credits = 9999;
+            }
+
+            // Upgrade the user
             const { error } = await supabase
                 .from("profiles")
-                .update({ is_pro: true, credits: 100 }) // Give 100 credits for Pro
+                .update({ 
+                    is_pro: true, 
+                    plan_type: planType,
+                    credits: credits,
+                    lemon_squeezy_subscription_id: subscriptionId
+                })
                 .eq("id", userId);
 
             if (error) throw error;
@@ -42,7 +68,11 @@ export async function POST(request: Request) {
             // Downgrade the user
             const { error } = await supabase
                 .from("profiles")
-                .update({ is_pro: false })
+                .update({ 
+                    is_pro: false,
+                    plan_type: 'free',
+                    lemon_squeezy_subscription_id: null
+                })
                 .eq("id", userId);
 
             if (error) throw error;

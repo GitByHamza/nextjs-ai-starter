@@ -14,28 +14,30 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        configureLemonSqueezy();
+        // Parse variantId from request body
+        const body = await request.json().catch(() => ({}));
+        const { variantId } = body;
 
-        const variantId = process.env.LEMON_SQUEEZY_VARIANT_ID;
+        configureLemonSqueezy();
 
         if (!variantId) {
             return NextResponse.json(
-                { error: "Variant ID not configured" },
-                { status: 500 }
+                { error: "Variant ID is required" },
+                { status: 400 }
             );
         }
 
         const variantIdNum = parseInt(variantId, 10);
         if (isNaN(variantIdNum)) {
             return NextResponse.json(
-                { error: `Invalid Variant ID configuration: ${variantId}. It should be a number.` },
-                { status: 500 }
+                { error: `Invalid Variant ID: ${variantId}. It should be a number.` },
+                { status: 400 }
             );
         }
 
         const checkout = await createCheckout(
             process.env.LEMON_SQUEEZY_STORE_ID!,
-            parseInt(variantId, 10),
+            variantIdNum,
             {
                 checkoutData: {
                     email: user.email,

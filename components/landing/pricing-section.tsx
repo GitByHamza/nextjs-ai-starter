@@ -35,6 +35,7 @@ export function PricingSection() {
                     features={['Unlimited Projects', 'Advanced Analytics', 'Priority Support', 'Custom Domain']}
                     highlighted
                     yearly={isYearly}
+                    variantId={isYearly ? process.env.NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_PRO_YEARLY : process.env.NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_PRO_MONTHLY}
                 />
                 <PricingCard
                     title="Enterprise"
@@ -42,13 +43,47 @@ export function PricingSection() {
                     description="For scaling teams."
                     features={['SSO', 'SLA', 'Dedicated Manager', 'Audit Logs']}
                     yearly={isYearly}
+                    variantId={isYearly ? process.env.NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_ENTERPRISE_YEARLY : process.env.NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_ENTERPRISE_MONTHLY}
                 />
             </div>
         </section>
     )
 }
 
-function PricingCard({ title, price, description, features, highlighted = false, yearly = false }: { title: string, price: string, description: string, features: string[], highlighted?: boolean, yearly?: boolean }) {
+function PricingCard({ title, price, description, features, highlighted = false, yearly = false, variantId }: { title: string, price: string, description: string, features: string[], highlighted?: boolean, yearly?: boolean, variantId?: string }) {
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleCheckout = async () => {
+        if (!variantId) return;
+        
+        try {
+            setIsLoading(true);
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ variantId }),
+            });
+
+            const data = await response.json();
+
+            if (data.url) {
+                window.location.href = data.url;
+            } else if (data.error === "Unauthorized") {
+                window.location.href = "/login";
+            } else {
+                console.error("Checkout error:", data.error);
+                alert("Checkout failed: " + data.error);
+            }
+        } catch (error) {
+            console.error("Checkout error:", error);
+            alert("Checkout failed. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <Card className={`flex flex-col ${highlighted ? 'border-primary shadow-lg scale-105' : ''}`}>
             <CardHeader>
@@ -69,9 +104,20 @@ function PricingCard({ title, price, description, features, highlighted = false,
                 </div>
             </CardContent>
             <CardFooter>
-                <Button className="w-full" variant={highlighted ? 'default' : 'outline'}>
-                    Get Started
-                </Button>
+                {title === "Hobby" ? (
+                    <Button className="w-full" variant="outline" onClick={() => window.location.href = "/login"}>
+                        Get Started
+                    </Button>
+                ) : (
+                    <Button 
+                        className="w-full" 
+                        variant={highlighted ? 'default' : 'outline'}
+                        onClick={handleCheckout}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? "Loading..." : "Get Started"}
+                    </Button>
+                )}
             </CardFooter>
         </Card>
     )

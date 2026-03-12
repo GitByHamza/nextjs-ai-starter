@@ -10,21 +10,24 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useUserSubscription } from '@/lib/hooks/use-user-subscription'
 
 export default function ChatPage() {
-    // Cast options to any to avoid strict type checks on 'api' if it was renamed
-    // Cast return to any as definitions seem to strictly omit input/handleInputChange but we need to check runtime behavior or adapt
-    // Adapting to manual input management based on type definition
-    const chat = useChat({
-        api: '/api/chat',
-    } as any)
+    // 1. Generate a unique ID for this new chat session
+    const [chatId, setChatId] = useState<string>('')
 
-    // Destructure what we know exists or might exist
-    const { messages, status, sendMessage, append, error } = chat as any
+    useEffect(() => {
+        // Set ID only on the client to avoid Next.js hydration mismatch
+        setChatId(crypto.randomUUID())
+    }, [])
+
+    // 2. Pass the chatId to the backend via the `body` property
+    const { messages, status, append, error } = useChat({
+        api: '/api/chat',
+        body: { chatId },
+    })
 
     const [input, setInput] = useState('')
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const { data: subscription } = useUserSubscription()
 
-    // Derive isLoading
     const isLoading = status === 'streaming' || status === 'submitted'
 
     const scrollToBottom = () => {
@@ -41,19 +44,13 @@ export default function ChatPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!input.trim()) return
+        // Ensure we don't send empty messages or messages before the ID is ready
+        if (!input.trim() || !chatId) return
 
         const content = input
         setInput('')
 
-        // Try append first as it is standard in previous versions, fallback to sendMessage
-        if (append) {
-            await append({ role: 'user', content })
-        } else if (sendMessage) {
-            await sendMessage({ role: 'user', content })
-        } else {
-            console.error('No send method found in useChat return', chat)
-        }
+        await append({ role: 'user', content })
     }
 
     return (
@@ -123,7 +120,7 @@ export default function ChatPage() {
                             className="flex-1 pr-12"
                             autoFocus
                         />
-                        <Button type="submit" size="icon" disabled={isLoading || !input.trim()} className="absolute right-0">
+                        <Button type="submit" size="icon" disabled={isLoading || !input.trim() || !chatId} className="absolute right-0">
                             <Send className="h-4 w-4" />
                         </Button>
                     </form>
