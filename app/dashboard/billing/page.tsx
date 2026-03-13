@@ -16,7 +16,17 @@ export default function BillingPage() {
 
     const handleUpgrade = async () => {
         try {
-            const response = await fetch('/api/checkout', { method: 'POST' })
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                // Send the variant ID to the backend!
+                body: JSON.stringify({
+                    // IMPORTANT: We use the NEXT_PUBLIC_ version of the variable here
+                    variantId: process.env.NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_PRO_MONTHLY
+                })
+            })
             const data = await response.json()
             if (data.url) {
                 window.location.href = data.url

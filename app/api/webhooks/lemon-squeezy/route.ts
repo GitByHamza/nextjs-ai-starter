@@ -1,6 +1,8 @@
-import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import crypto from "crypto";
+import { createClient } from "@supabase/supabase-js"; // Using standard supabase-js
+import { sendEmail } from "@/lib/emails/resend";
+import { UpgradeEmail } from "@/components/emails/upgrade-email";
 
 export async function POST(request: Request) {
     try {
@@ -20,55 +22,71 @@ export async function POST(request: Request) {
         const data = JSON.parse(rawBody);
         const eventName = data.meta.event_name;
         const userId = data.meta.custom_data.user_id;
+        const customerEmail = data.data.attributes.user_email;
 
         if (!userId) {
             return NextResponse.json({ error: "No user ID" }, { status: 400 });
         }
 
-        const supabase = await createClient();
+        // 2. THE FIX: Create an Admin Supabase Client that bypasses RLS
+        const supabaseAdmin = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY! // Uses the secret admin key
+        );
 
-        // 2. Handle specific events
+        // 3. Handle specific events
         if (eventName === "order_created" || eventName === "subscription_created") {
             const variantId = data.data.attributes.variant_id.toString();
             const subscriptionId = data.data.attributes.subscription_id?.toString() || data.data.id.toString();
-            
+
             let planType = 'free';
             let credits = 10;
-            
-            // Determine plan based on variant ID
+
+            // Fixed the variable names to match NEXT_PUBLIC_ from your env file
             if (
-                variantId === process.env.LEMON_SQUEEZY_VARIANT_PRO_MONTHLY ||
-                variantId === process.env.LEMON_SQUEEZY_VARIANT_PRO_YEARLY
+                variantId === process.env.NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_PRO_MONTHLY ||
+                variantId === process.env.NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_PRO_YEARLY
             ) {
                 planType = 'pro';
-                credits = 100;
+                credits = 500; // Updated to 500 as requested!
             } else if (
-                variantId === process.env.LEMON_SQUEEZY_VARIANT_ENTERPRISE_MONTHLY ||
-                variantId === process.env.LEMON_SQUEEZY_VARIANT_ENTERPRISE_YEARLY
+                variantId === process.env.NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_ENTERPRISE_MONTHLY ||
+                variantId === process.env.NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_ENTERPRISE_YEARLY
             ) {
                 planType = 'enterprise';
                 credits = 9999;
             }
 
-            // Upgrade the user
-            const { error } = await supabase
+            // Upgrade the user using the Admin Client
+            const { error } = await supabaseAdmin
                 .from("profiles")
-                .update({ 
-                    is_pro: true, 
+                .update({
+                    is_pro: true,
                     plan_type: planType,
                     credits: credits,
                     lemon_squeezy_subscription_id: subscriptionId
                 })
                 .eq("id", userId);
 
-            if (error) throw error;
+            if (error) {
+                console.error("Supabase Admin Update Error:", error);
+                throw error;
+            }
+
+            // Send Email
+            if (customerEmail) {
+                await sendEmail({
+                    to: customerEmail,
+                    subject: 'Your account has been upgraded!',
+                    react: UpgradeEmail({ planType })
+                });
+            }
         }
 
         if (eventName === "subscription_cancelled" || eventName === "subscription_expired") {
-            // Downgrade the user
-            const { error } = await supabase
+            const { error } = await supabaseAdmin
                 .from("profiles")
-                .update({ 
+                .update({
                     is_pro: false,
                     plan_type: 'free',
                     lemon_squeezy_subscription_id: null

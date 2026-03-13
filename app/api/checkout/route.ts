@@ -14,23 +14,20 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        // Parse variantId from request body
         const body = await request.json().catch(() => ({}));
         const { variantId } = body;
 
         configureLemonSqueezy();
 
         if (!variantId) {
-            return NextResponse.json(
-                { error: "Variant ID is required" },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: "Variant ID is required" }, { status: 400 });
         }
 
-        const variantIdNum = parseInt(variantId, 10);
+        // 1. Convert back to number (since real Variant IDs are integers)
+        const variantIdNum = parseInt(variantId.toString(), 10);
         if (isNaN(variantIdNum)) {
             return NextResponse.json(
-                { error: `Invalid Variant ID: ${variantId}. It should be a number.` },
+                { error: `Invalid Variant ID: ${variantId}. Find the numeric ID in your Lemon Squeezy dashboard.` },
                 { status: 400 }
             );
         }
@@ -51,9 +48,17 @@ export async function POST(request: Request) {
             }
         );
 
+        // 2. Crucial Error Catch: If Lemon Squeezy rejects the request, stop here!
+        if (checkout.error) {
+            console.error("Lemon Squeezy API Error:", checkout.error);
+            return NextResponse.json({ error: checkout.error.message }, { status: 400 });
+        }
+
+        // 3. If successful, return the URL
         return NextResponse.json({ url: checkout.data?.data.attributes.url });
+
     } catch (error: any) {
-        console.error(error);
+        console.error("Checkout System Error:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
