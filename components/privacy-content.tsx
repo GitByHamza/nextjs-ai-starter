@@ -1,55 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-
-function useInView() {
-    const ref = useRef<HTMLDivElement>(null)
-    const [inView, setInView] = useState(false)
-
-    useEffect(() => {
-        const el = ref.current
-        if (!el) return
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setInView(true)
-                    observer.disconnect()
-                }
-            },
-            { threshold: 0.15 }
-        )
-        observer.observe(el)
-        return () => observer.disconnect()
-    }, [])
-
-    return { ref, inView }
-}
-
-function FadeUp({
-    children,
-    delay = 0,
-    className = '',
-}: {
-    children: React.ReactNode
-    delay?: number
-    className?: string
-}) {
-    const { ref, inView } = useInView()
-
-    return (
-        <div
-            ref={ref}
-            className={className}
-            style={{
-                opacity: inView ? 1 : 0,
-                transform: inView ? 'translateY(0px)' : 'translateY(24px)',
-                transition: `opacity 0.6s ease ${delay}ms, transform 0.6s ease ${delay}ms`,
-            }}
-        >
-            {children}
-        </div>
-    )
-}
+import { FadeUp } from '@/components/ui/fade-up'
 
 const sections = [
     {
@@ -85,9 +36,7 @@ export function PrivacyContent() {
 
             {sections.map((section, i) => (
                 <FadeUp key={section.title} delay={i * 60} className="mt-8">
-                    <h2 className="text-xl font-semibold text-foreground mb-4">
-                        {section.title}
-                    </h2>
+                    <h2 className="text-xl font-semibold text-foreground mb-4">{section.title}</h2>
                     <p className="mb-4">{section.body}</p>
                 </FadeUp>
             ))}
@@ -95,10 +44,7 @@ export function PrivacyContent() {
             <FadeUp delay={0} className="mt-8">
                 <p className="text-sm">
                     Contact us at{' '}
-                    <a
-                        href="mailto:privacy@example.com"
-                        className="underline underline-offset-4 hover:text-foreground transition-colors"
-                    >
+                    <a href="mailto:privacy@example.com" className="underline underline-offset-4 hover:text-foreground transition-colors">
                         privacy@example.com
                     </a>{' '}
                     for any questions.

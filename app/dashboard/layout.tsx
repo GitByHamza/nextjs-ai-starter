@@ -32,6 +32,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         router.push('/')
     }
 
+    // Overview is exact match only — otherwise /dashboard matches everything.
+    // All other nav items use startsWith so nested routes (e.g. /dashboard/chat/[id])
+    // keep the correct item highlighted.
+    function isActive(href: string) {
+        if (href === '/dashboard') return pathname === '/dashboard'
+        return pathname.startsWith(href)
+    }
+
     if (isLoading) {
         return <div className="flex h-screen items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin" /></div>
     }
@@ -50,8 +58,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     {navItems.map((item) => (
                         <Link key={item.href} href={item.href}>
                             <Button
-                                variant={pathname === item.href ? 'secondary' : 'ghost'}
-                                className={`w-full justify-start gap-2 ${pathname === item.href ? 'bg-secondary' : ''}`}
+                                variant={isActive(item.href) ? 'secondary' : 'ghost'}
+                                className={`w-full justify-start gap-2 ${isActive(item.href) ? 'bg-secondary' : ''}`}
                             >
                                 <item.icon className="h-4 w-4" />
                                 {item.label}
@@ -109,7 +117,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             {navItems.map((item) => (
                                 <Link key={item.href} href={item.href}>
                                     <Button
-                                        variant={pathname === item.href ? 'secondary' : 'ghost'}
+                                        variant={isActive(item.href) ? 'secondary' : 'ghost'}
                                         className="w-full justify-start gap-2"
                                     >
                                         <item.icon className="h-4 w-4" />

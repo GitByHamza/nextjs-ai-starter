@@ -1,100 +1,19 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { FadeUp } from '@/components/ui/fade-up'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Zap, Lock, Globe, BarChart3, MessageSquare, Box, Sparkles, Layers } from 'lucide-react'
 
-function useInView() {
-    const ref = useRef<HTMLDivElement>(null)
-    const [inView, setInView] = useState(false)
-
-    useEffect(() => {
-        const el = ref.current
-        if (!el) return
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setInView(true)
-                    observer.disconnect()
-                }
-            },
-            { threshold: 0.15 }
-        )
-        observer.observe(el)
-        return () => observer.disconnect()
-    }, [])
-
-    return { ref, inView }
-}
-
-function FadeUp({
-    children,
-    delay = 0,
-    className = '',
-}: {
-    children: React.ReactNode
-    delay?: number
-    className?: string
-}) {
-    const { ref, inView } = useInView()
-
-    return (
-        <div
-            ref={ref}
-            className={className}
-            style={{
-                opacity: inView ? 1 : 0,
-                transform: inView ? 'translateY(0px)' : 'translateY(24px)',
-                transition: `opacity 0.6s ease ${delay}ms, transform 0.6s ease ${delay}ms`,
-            }}
-        >
-            {children}
-        </div>
-    )
-}
-
 const features = [
-    {
-        icon: Lock,
-        title: "Authentication Ready",
-        description: "Secure user authentication with Supabase Auth, including social logins and protected routes."
-    },
-    {
-        icon: BarChart3,
-        title: "Analytics Dashboard",
-        description: "Built-in analytics to track user engagement and growth metrics right from the start."
-    },
-    {
-        icon: MessageSquare,
-        title: "AI Integration",
-        description: "Seamlessly integrated with Vercel AI SDK and Google Gemini for powerful AI capabilities."
-    },
-    {
-        icon: Globe,
-        title: "Global Edge Network",
-        description: "Deployed on Vercel's Edge Network for lightning-fast performance worldwide."
-    },
-    {
-        icon: Box,
-        title: "Database Included",
-        description: "Scalable PostgreSQL database hosted on Supabase with easy-to-use reliable APIs."
-    },
-    {
-        icon: Sparkles,
-        title: "Modern UI/UX",
-        description: "Beautifully designed with Tailwind CSS and Shadcn UI components for a premium feel."
-    },
-    {
-        icon: Layers,
-        title: "Lemon Squeezy Payments",
-        description: "Full e-commerce integration for subscriptions, one-time payments, and billing portal."
-    },
-    {
-        icon: Zap,
-        title: "DX Focused",
-        description: "Optimized for developer experience with TypeScript, ESLint, and Prettier configuration."
-    }
+    { icon: Lock,         title: "Authentication Ready",    description: "Secure user authentication with Supabase Auth, including social logins and protected routes." },
+    { icon: BarChart3,    title: "Analytics Dashboard",     description: "Built-in analytics to track user engagement and growth metrics right from the start." },
+    { icon: MessageSquare,title: "AI Integration",          description: "Seamlessly integrated with Vercel AI SDK and Google Gemini for powerful AI capabilities." },
+    { icon: Globe,        title: "Global Edge Network",     description: "Deployed on Vercel's Edge Network for lightning-fast performance worldwide." },
+    { icon: Box,          title: "Database Included",       description: "Scalable PostgreSQL database hosted on Supabase with easy-to-use reliable APIs." },
+    { icon: Sparkles,     title: "Modern UI/UX",            description: "Beautifully designed with Tailwind CSS and Shadcn UI components for a premium feel." },
+    { icon: Layers,       title: "Lemon Squeezy Payments",  description: "Full e-commerce integration for subscriptions, one-time payments, and billing portal." },
+    { icon: Zap,          title: "DX Focused",              description: "Optimized for developer experience with TypeScript, ESLint, and Prettier configuration." },
 ]
 
 export function FeaturesContent() {
@@ -122,7 +41,7 @@ export function FeaturesContent() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {features.map((feature, i) => (
-                    <FadeUp key={i} delay={i * 60}>
+                    <FadeUp key={feature.title} delay={i * 60}>
                         <Card className="bg-muted/5 border-muted/20 h-full">
                             <CardHeader>
                                 <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">

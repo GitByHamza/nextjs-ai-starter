@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Users, ShieldCheck, DollarSign, TrendingUp } from "lucide-react";
 
 // ENTER YOUR ADMIN EMAIL HERE
-const ADMIN_EMAILS = ["professorhamza000@gmail.com"];
+const ADMIN_EMAILS = process.env.ADMIN_EMAILS?.split(',').map(e => e.trim()) ?? [];
 
 export default async function AdminPage() {
   const supabase = await createClient();

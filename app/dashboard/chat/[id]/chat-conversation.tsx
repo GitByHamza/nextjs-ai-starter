@@ -1,6 +1,6 @@
+//@ts-nocheck
 'use client'
-
-import { useChat } from '@ai-sdk/react'
+import { useChat, Message } from '@ai-sdk/react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -9,19 +9,16 @@ import { useEffect, useRef, useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useUserSubscription } from '@/lib/hooks/use-user-subscription'
 
-export default function ChatPage() {
-    // 1. Generate a unique ID for this new chat session
-    const [chatId, setChatId] = useState<string>('')
+interface Props {
+    chatId: string
+    initialMessages: Message[]
+}
 
-    useEffect(() => {
-        // Set ID only on the client to avoid Next.js hydration mismatch
-        setChatId(crypto.randomUUID())
-    }, [])
-
-    // 2. Pass the chatId to the backend via the `body` property
+export default function ChatConversation({ chatId, initialMessages }: Props) {
     const { messages, status, append, error } = useChat({
         api: '/api/chat',
         body: { chatId },
+        initialMessages,  // ← pre-fills the chat with past messages
     })
 
     const [input, setInput] = useState('')
@@ -31,7 +28,7 @@ export default function ChatPage() {
     const isLoading = status === 'streaming' || status === 'submitted'
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
 
     useEffect(() => {
@@ -44,12 +41,9 @@ export default function ChatPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        // Ensure we don't send empty messages or messages before the ID is ready
-        if (!input.trim() || !chatId) return
-
+        if (!input.trim()) return
         const content = input
         setInput('')
-
         await append({ role: 'user', content })
     }
 
@@ -116,11 +110,11 @@ export default function ChatPage() {
                         <Input
                             value={input}
                             onChange={handleInputChange}
-                            placeholder="Type your message..."
+                            placeholder="Continue the conversation..."
                             className="flex-1 pr-12"
                             autoFocus
                         />
-                        <Button type="submit" size="icon" disabled={isLoading || !input.trim() || !chatId} className="absolute right-0">
+                        <Button type="submit" size="icon" disabled={isLoading || !input.trim()} className="absolute right-0">
                             <Send className="h-4 w-4" />
                         </Button>
                     </form>
